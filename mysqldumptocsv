@@ -1,0 +1,88 @@
+#!/usr/bin/python3
+
+
+import argparse
+import pathlib
+import re
+
+from typing import List
+
+
+
+def get_filename(f) -> str:  # type: ignore
+    filename_pattern = re.compile(r'(create table `(.*)` \()')
+
+    for line in f:
+        line = line.strip().lower()
+        if filename_groups := filename_pattern.match(line):
+            filename = filename_groups.group(2)
+            return filename
+
+
+def get_columns(f) -> List[str]:
+    columns = []
+    for line in f:
+        if column_match := re.match(r'`(.*)`', line.strip()):
+            columns.append(column_match.group(1).strip())
+        else:
+            break
+    return columns
+
+
+def save_csv_from_chunk(line, output_file):
+    line = line[line.find('(')+1: -2]
+
+    with open(output_file, 'a') as f:
+        values = line.split(r'),(')
+        f.writelines('\n'.join(values))
+
+
+def init_csv_file(filename: pathlib.Path, columns: List[str], sep: str = ','):
+    with filename.open('w') as f:
+        f.write(sep.join(columns) + '\n')
+
+
+def mysql_to_csv():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument( '-I, --input-file', help='Path to mysqldump', dest='input')
+    parser.add_argument('-o, --output-file', 
+        help='Output filename. Default - name from dump.', dest='output')
+    args = parser.parse_args()
+
+    if not args.input:
+        parser.print_help()
+        exit(1)
+    try:
+        path = pathlib.Path(args.input)
+        f = open(path, 'r')
+    except FileNotFoundError:
+        print(f'Wrong input file path {args.input:!r}')
+        exit(1)
+
+    try:
+        output_filename = get_filename(f=f) + '.csv'
+        if args.output:
+            output_filename = args.input.lstrip('.csv') + '.csv'
+
+        columns = get_columns(f=f)
+        init_csv_file(filename=pathlib.Path(output_filename), columns=columns)
+
+        for line in f:
+            line = line.strip()
+            if line.lower().startswith('insert into'):
+                line = line[line.find('(')+1: -2]
+                save_csv_from_chunk(line=line, output_file=pathlib.Path(f'{output_filename}.csv'))
+    except Exception as e:
+        print(e)
+        print('Can"t parse {args.input:!r}')
+    finally:
+        f.close()
+
+
+def main():
+    mysql_to_csv()
+
+
+if __name__ == '__main__':
+    main()
