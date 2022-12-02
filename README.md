@@ -57,7 +57,7 @@ id,name,master,last_check,type,notified_serial,account
 # Usage
 
 ```bash
-git clone https://github.com/HeySlava/mysd2csv  && mysd2csv
+git clone https://github.com/HeySlava/mysd2csv  && cd mysd2csv
 chmod +x mysd2csv
 ./mysd2csv --input-file example.mysqldump.sql
 ```
