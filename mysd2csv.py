@@ -8,7 +8,6 @@ import re
 from typing import List
 
 
-
 def get_filename(f) -> str:  # type: ignore
     filename_pattern = re.compile(r'(create table `(.*)` \()')
 
@@ -16,7 +15,7 @@ def get_filename(f) -> str:  # type: ignore
         line = line.strip().lower()
         if filename_groups := filename_pattern.match(line):
             filename = filename_groups.group(2)
-            return filename
+            return filename + '.csv'
 
 
 def get_columns(f) -> List[str]:
@@ -37,7 +36,11 @@ def save_csv_from_chunk(line, output_file):
         f.writelines('\n'.join(values) + '\n')
 
 
-def init_csv_file(filename: pathlib.Path, columns: List[str], sep: str = ','):
+def init_csv_file(
+    filename: pathlib.Path,
+    columns: List[str],
+    sep: str = ',',
+) -> None:
     with filename.open('w') as f:
         f.write(sep.join(columns) + '\n')
 
@@ -45,14 +48,19 @@ def init_csv_file(filename: pathlib.Path, columns: List[str], sep: str = ','):
 def mysql_to_csv():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument( '-I', '--input-file', help='Path to mysqldump', dest='input')
-    parser.add_argument('-o', '--output-file', 
-        help='Output filename. Default - name from dump.', dest='output')
+    parser.add_argument('-I', '--input-file', help='Path to mysqldump', dest='input')
+    parser.add_argument(
+        '-o',
+        '--output-file',
+        help='Output filename. Default - name from dump.',
+        dest='output',
+    )
     args = parser.parse_args()
 
     if not args.input:
         parser.print_help()
         exit(1)
+
     try:
         path = pathlib.Path(args.input)
         f = open(path, 'r')
@@ -61,7 +69,7 @@ def mysql_to_csv():
         exit(1)
 
     try:
-        output_filename = get_filename(f=f) + '.csv'
+        output_filename = get_filename(f=f)
         if args.output:
             output_filename = args.input.lstrip('.csv') + '.csv'
 
@@ -72,7 +80,10 @@ def mysql_to_csv():
             line = line.strip()
             if line.lower().startswith('insert into'):
                 line = line[line.find('('): -2]
-                save_csv_from_chunk(line=line, output_file=pathlib.Path(output_filename))
+                save_csv_from_chunk(
+                    line=line,
+                    output_file=pathlib.Path(output_filename),
+                )
     except Exception as e:
         print(e)
         print('Can"t parse {args.input:!r}')
