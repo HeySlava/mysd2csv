@@ -37,8 +37,8 @@ INSERT INTO `domains` VALUES (1,'test.com',NULL,NULL,'NATIVE',NULL,NULL),(2,'ouv
 ```bash
 # domain.csv
 id,name,master,last_check,type,notified_serial,account
-1,'test.com',NULL,NULL,'NATIVE',NULL,NU
-2,'ouvameuh.net',NULL,NULL,'NATIVE',NULL,NU
+1,'test.com','','','NATIVE','',NU
+2,'ouvameuh.net','','','NATIVE','',NU
 ```
 
 The result with line by line style is the same.
@@ -50,8 +50,8 @@ INSERT INTO `domains` VALUES (2,'ouvameuh.net',NULL,NULL,'NATIVE',NULL,NULL);
 
 # domain.csv
 id,name,master,last_check,type,notified_serial,account
-1,'test.com',NULL,NULL,'NATIVE',NULL,NU
-2,'ouvameuh.net',NULL,NULL,'NATIVE',NULL,NU
+1,'test.com','','','NATIVE','',NU
+2,'ouvameuh.net','','','NATIVE','',NU
 ```
 
 # Usage
@@ -74,4 +74,4 @@ optional arguments:
 ```
 
 ### TODO
-Replace NULL with `''` or provide a choice.
+- [x] Replace NULL with `''` or provide a choice.
