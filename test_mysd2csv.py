@@ -77,15 +77,15 @@ def test_get_column_names(ddl, expected):
         'line,expected',
         [
             (
-                r"INSERT INTO `domains` VALUES (1,'test.com',NULL,NULL,'NATIVE',NULL,NULL),(2,'ouvameuh.net',NULL,NULL,'NATIVE',NULL,NULL);",
+                r"INSERT INTO `domains` VALUES (1,'test.com','','','NATIVE','',''),(2,'ouvameuh.net','','','NATIVE','','');",
                 (
-                    "1,'test.com',NULL,NULL,'NATIVE',NULL,NULL\n"
-                    "2,'ouvameuh.net',NULL,NULL,'NATIVE',NULL,NULL"
+                    "1,'test.com','','','NATIVE','',''\n"
+                    "2,'ouvameuh.net','','','NATIVE','',''"
                 ),
             ),
             (
-                r"INSERT INTO `domains` VALUES (1,'test.com',NULL,NULL,'NATIVE',NULL,NULL);",
-                "1,'test.com',NULL,NULL,'NATIVE',NULL,NULL",
+                r"INSERT INTO `domains` VALUES (1,'test.com','','','NATIVE','','');",
+                "1,'test.com','','','NATIVE','',''",
             ),
         ],
         ids=['long_line', 'short_line'],
@@ -93,6 +93,35 @@ def test_get_column_names(ddl, expected):
 def test_save_csv_from_chunk(line, expected, tmp_path):
     tmpfile = tmp_path / 'pytest.csv'
     save_csv_from_chunk(line, tmpfile)
+    with tmpfile.open() as f:
+        content = f.read()
+        content = content.strip()
+
+    assert content == expected
+
+
+
+
+@pytest.mark.parametrize(
+        'line,expected',
+        [
+            (
+                r"INSERT INTO `domains` VALUES (1,'test.com',SEP,SEP,'NATIVE',SEP,SEP),(2,'ouvameuh.net',SEP,SEP,'NATIVE',SEP,SEP);",
+                (
+                    "1,'test.com',SEP,SEP,'NATIVE',SEP,SEP\n"
+                    "2,'ouvameuh.net',SEP,SEP,'NATIVE',SEP,SEP"
+                ),
+            ),
+            (
+                r"INSERT INTO `domains` VALUES (1,'test.com',SEP,SEP,'NATIVE',SEP,SEP);",
+                "1,'test.com',SEP,SEP,'NATIVE',SEP,SEP",
+            ),
+        ],
+        ids=['long_line', 'short_line'],
+)
+def test_save_csv_from_chunk_with_sep(line, expected, tmp_path):
+    tmpfile = tmp_path / 'pytest.csv'
+    save_csv_from_chunk(line, tmpfile, null='SEP')
     with tmpfile.open() as f:
         content = f.read()
         content = content.strip()
