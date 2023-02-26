@@ -88,7 +88,7 @@ def mysql_to_csv():
     try:
         path = pathlib.Path(args.input)
         input_file = open(path, 'r')
-        num_lines = sum(1 for _ in open(args.input))
+        num_lines = sum(1 for r in open(args.input) if r.lower().startswith('insert'))
     except FileNotFoundError:
         print(f'Wrong input file path {args.input:!r}')
         exit(1)
@@ -114,7 +114,7 @@ def mysql_to_csv():
                     output_file=pathlib.Path(output_filename),
                     null=args.null,
                 )
-            c += 1
+                c += 1
             percent_complete = c / num_lines * 100
             progress_bar = get_progress_bar(percent_complete, width=20)
             print(f'{progress_bar} {c}/{num_lines}', end='\r')
