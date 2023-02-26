@@ -6,6 +6,11 @@ from io import TextIOWrapper
 from typing import List
 
 
+def get_progress_bar(percent: float, width: int) -> str:
+    num_chars = int(percent / 100 * width)
+    return '[' + '#' * num_chars + ' ' * (width - num_chars) + ']'
+
+
 def get_filename(
         f: TextIOWrapper,
 ) -> str:
@@ -83,7 +88,7 @@ def mysql_to_csv():
     try:
         path = pathlib.Path(args.input)
         input_file = open(path, 'r')
-        num_lines = sum(1 for _ in open(args.input))
+        num_lines = sum(1 for r in open(args.input) if r.lower().startswith('insert'))
     except FileNotFoundError:
         print(f'Wrong input file path {args.input:!r}')
         exit(1)
@@ -109,8 +114,11 @@ def mysql_to_csv():
                     output_file=pathlib.Path(output_filename),
                     null=args.null,
                 )
-            c += 1
-            print(f'{c} / {num_lines}')
+                c += 1
+            percent_complete = c / num_lines * 100
+            progress_bar = get_progress_bar(percent_complete, width=20)
+            print(f'{progress_bar} {c}/{num_lines}', end='\r')
+        print()
     except Exception as e:
         print(e)
         print('Can"t parse {args.input:!r}')
