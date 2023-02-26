@@ -6,6 +6,11 @@ from io import TextIOWrapper
 from typing import List
 
 
+def get_progress_bar(percent: float, width: int) -> str:
+    num_chars = int(percent / 100 * width)
+    return '[' + '#' * num_chars + ' ' * (width - num_chars) + ']'
+
+
 def get_filename(
         f: TextIOWrapper,
 ) -> str:
@@ -110,7 +115,10 @@ def mysql_to_csv():
                     null=args.null,
                 )
             c += 1
-            print(f'{c} / {num_lines}')
+            percent_complete = c / num_lines * 100
+            progress_bar = get_progress_bar(percent_complete, width=20)
+            print(f'{progress_bar} {c}/{num_lines}', end='\r')
+        print()
     except Exception as e:
         print(e)
         print('Can"t parse {args.input:!r}')
